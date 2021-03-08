@@ -1,0 +1,21 @@
+.DashedSentence-sentence {
+  clear: both;
+  font-size: 30px;
+}
+
+
+li.Question-scale-box {
+    float: left;
+    list-style: none;
+    margin-left: 2;
+    padding-left: 2;
+    margin-right: 2em;
+    padding-right: 0;
+    border: 1px #9ea4b1 solid;
+    width: 8em;
+    height: 2em;
+    padding-top: 0.5em;
+    text-align: center;
+}
+
+

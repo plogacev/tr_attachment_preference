@@ -1,0 +1,120 @@
+var shuffleSequence = seq("intro", 
+                          "intro_sep", 
+                          sepWith("within_intro_sep", "practice"), 
+                          "practice_sep", 
+                          sepWith("sep", rshuffle(startsWith("exp1"),startsWith("exp2"),startsWith("exp3"))), //
+                            "send_results",
+                          "debrief"); 
+var practiceItemTypes = ["practice"];
+
+// default settings
+var manualSendResults = true;
+
+var defaults = [
+  "Separator", {
+    transfer: 1000,
+    normalMessage: "",
+    errorMessage: ""
+  },
+  "DashedSentence", {
+    hideProgressBar: true,
+    mode: "self-paced reading",
+    display: "in place"
+  },
+  "Question", {
+    hideProgressBar: true,
+    leftComment: "Q'ya basınız", rightComment: "P'ye basınız",
+    presentHorizontally: false,
+    hasCorrect: true,
+    randomOrder: true
+  },
+  "Message", {
+    hideProgressBar: false
+  },
+  "Form", {
+    hideProgressBar: true,
+    continueOnReturn: true,
+    saveReactionTime: true,
+    continueMessage: "Devam etmek için buraya tıklayınız.",
+    obligatoryCheckboxErrorGenerator: function (field) { return "Bu alanı doldurmanız gerekmektedir." },
+    obligatoryErrorGenerator: function (field) { return "Bu alanı doldurmanız gerekmektedir."; },
+    obligatoryRadioErrorGenerator: function (field) { return "Seçeneklerden birini seçiniz."; }
+    
+  }
+  ];
+
+function modifyRunningOrder(ro) {
+  for (var i = 0; i < ro.length; ++i) {
+    if ( (i != 0) && (i % 40 == 0)) {
+      // Passing 'true' as the third argument casues the results from this controller to be omitted from the results file. 
+      // (Though in fact, the Message controller does not add any results in any case.)
+      ro[i].push(new DynamicElement(
+        "Message",
+        { html: "<p>Kısa bir ara. Bir sonraki cümleye geçmek için boşluk tuşuna basınız.</p>", transfer: "keypress"}, //, transfer: 1000 
+        true
+      ));
+    }
+  }
+  return ro;
+}
+
+var items = [
+  ["send_results", "__SendResults__", { }],
+  
+  ["sep", "Separator", {
+    normalMessage: "",
+    errorMessage: "",
+    ignoreFailure: false}],
+  
+  ["intro_sep", "Separator", {
+    transfer: "keypress",
+    normalMessage: "Alıstırma kısmına başlamak için boşluk tuşuna basınız.",
+    errorMessage: "Alıstırma kısmına başlamak için boşluk tuşuna basınız." }],
+  
+  
+  ["within_intro_sep", "Separator", {
+    transfer: "keypress",
+    normalMessage: "Harika. İyi gidiyorsunuz. Bir sonraki cümleye geçmek için boşluk tuşuna basınız.",
+    errorMessage: "Odaklanınız. Bir sonraki soruya geçmek için boşluk tuşuna basınız."}],
+  
+  ["practice_sep", "Separator", {
+    transfer: "keypress",
+    normalMessage: "Deneye başlamak için boşluk tuşuna basınız.",
+    errorMessage: "Odaklanınız. Bir sonraki soruya geçmek için boşluk tuşuna basınız." }],
+  
+  
+  ["intro", "Form", {
+    html: { include: "intro1.html" },
+    obligatoryCheckboxErrorGenerator: function (field) { return "Devam etmeden önce çalismaya katılmayı kabul etmelisiniz."; }
+  } ],
+  
+  ["intro", "Form", {
+    html: { include: "intro2.html" },
+    validators: {
+      age: function (s) { if (s.match(/^\d+$/)) return true; else return "Yaşınızı sayı olarak giriniz."; },
+    }
+  } ],
+  
+  ["intro", "Form", {
+    html: { include: "intro3.html" } } ],
+  
+  ["intro", "Form", {
+    html: { include: "intro4.html" },
+    transfer: "keypress"
+    //continueMessage: "Alıştırma kısmına başlamak için boşluk tuşuna basınız." 
+  } ],
+  
+  ["debrief", "Message", {
+    html: { include: "debrief.html" },
+    transfer: 3000  }],
+  
+  
+
+[["practice", 201], "DashedSentence", {s: "Kuyumcu müşterinin elindeki değerli pırlantayı görünce yerinden fırladı. Saliha diyor ki pırlanta aslında o kadar da değerli değilmiş."},
+        "Question", {q: "Müşterinin elinde pırlanta mı varmış?", as: ["Evet","Hayır"], hasCorrect: 0}],
+[["practice", 202], "DashedSentence", {s: "Küçük kız dedesinin bu sabah camiye gittiğini söyledi. Tuncay diyor ki dede bu sabah aslında pazara gitmiş."},
+        "Question", {q: "Dede oraya dün akşam mı gitmiş?", as: ["Evet","Hayır"], hasCorrect: 1}],
+[["practice", 203], "DashedSentence", {s: "Sarışın çocuk küçük kardeşine annesinin ona çok sinirlendiğini söyledi. Falih diyor ki çocukların babası da küçük kardeşe çok sinirlenmiş."},
+        "Question", {q: "Baba küçük kardeşe sinirli miymiş?", as: ["Evet","Hayır"],  hasCorrect: 0}],
+[["practice", 204], "DashedSentence", {s: "Dertli adam kaldırım kenarına oturup uzun uzun denize baktı. İnci diyor ki adam denize bakarken bir tane de simit yedi."},
+        "Question", {q: "Adam uçuruma bakarken mi simit yemiş?", as: ["Evet","Hayır"], hasCorrect: 1}],

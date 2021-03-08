@@ -40,7 +40,7 @@ se_cousineau <- function(df, n_conditions, subject, DV, group, is_proportion = N
 
 
 
-df <- read.csv("./results.txt", row.names = NULL, comment.char = "#", header = F, col.names = 1:12)
+df <- read.csv("../data/ibex/results/results", row.names = NULL, comment.char = "#", header = F, col.names = 1:12)
 colnames(df) <- c("time", "ip_md5", "controller", "item_id", "element_id", "exp_condition", "item", "val1", "val2", "val3", "val4", "sentence")
 
 df$subject <- with(df, paste(time, ip_md5)) %>% as.factor %>% as.integer %>% sprintf("S[%s]", .) %>% as.factor()
@@ -70,6 +70,7 @@ questions %<>% dplyr::select(-controller, -item_id, -element_id, -exp_condition,
 questions %<>% dplyr::rename( "question"=val1, "answer"=val2, "answer_correct"=val3, "RT"=val4)
 questions %<>% dplyr::select( subject, condition, item, question, answer, answer_correct, RT )
 head(questions)
+View(questions)
 
 # separate fillers from non-fillers
 spr_fillers <- spr %>% subset(condition == "filler")
@@ -94,6 +95,12 @@ spr %<>% dplyr::left_join( conditions_info )
 
 # to-do: double check that the indicator in the answer_np1 'column' matches what's in the 'answer' column
 questions %<>% dplyr::rename(answer_np1 = answer_correct)
+
+answers_incorrect <- subset(questions, (attachment == "N1" & !answer_np1) | (attachment == "N2" & answer_np1) )
+
+# look at incorrect answers
+answers_incorrect %>% group_by(item, attachment, question, answer) %>% dplyr::summarize(N=n()) %>% View()
+
 
 
 #########################################################

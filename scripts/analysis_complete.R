@@ -40,57 +40,57 @@ se_cousineau <- function(df, n_conditions, subject, DV, group, is_proportion = N
 
 
 
-df <- read.csv("../data/ibex/results/results", row.names = NULL, comment.char = "#", header = F, col.names = 1:12)
-colnames(df) <- c("time", "ip_md5", "controller", "item_id", "element_id", "exp_condition", "item", "val1", "val2", "val3", "val4", "sentence")
-
-df$subject <- with(df, paste(time, ip_md5)) %>% as.factor %>% as.integer %>% sprintf("S[%s]", .) %>% as.factor()
-df %<>% dplyr::select(-time, -ip_md5)
-
-# extract responses to questions in form
-form <- subset(df, controller == "Form")
-form %<>% dplyr::select(-item_id, -element_id, -exp_condition, -item, -val3:-sentence)
-form %<>% subset(val1 != "_REACTION_TIME_")
-form %<>% tidyr::pivot_wider(names_from = "val1", values_from = "val2")
-View(form) # because of a copy-and-paste error 'male' in the natturk column means 'yes' (native speaker)
-
-# extract spr reading times
-spr <- subset(df, controller == "DashedSentence")
-spr %<>% subset(exp_condition != "practice")
-spr$condition <- spr$exp_condition %>% stringr::str_split_fixed("_", n=2) %>% .[,2]
-spr %<>% dplyr::rename("word_pos"=val1, "word"=val2, "RT"=val3)
-spr %<>% dplyr::select(-val4, -sentence, -element_id, -item_id, -controller) 
-spr %<>% dplyr::select(subject, condition, item, word_pos, word, RT )
-spr$word_pos %<>% as.integer()
-
-# extract question answers
-questions <- subset(df, controller == "Question")
-questions %<>% subset(exp_condition != "practice")
-questions$condition <- questions$exp_condition %>% stringr::str_split_fixed("_", n=2) %>% .[,2]
-questions %<>% dplyr::select(-controller, -item_id, -element_id, -exp_condition, -sentence)
-questions %<>% dplyr::rename( "question"=val1, "answer"=val2, "answer_correct"=val3, "RT"=val4)
-questions %<>% dplyr::select( subject, condition, item, question, answer, answer_correct, RT )
-head(questions)
-View(questions)
-
-# separate fillers from non-fillers
-spr_fillers <- spr %>% subset(condition == "filler")
-spr %<>% subset(condition != "filler")
-question_fillers <- questions %>% subset(condition == "filler")
-questions %<>% subset(condition != "filler")
-
-
-# mapping from answers (rows) to attachment conditions (columns)
-#     a,d   b,e   c,f
-#     N1    N2    amb
-#    ----------------
-conditions_info <- 
-  data.frame(
-    condition = c("a", "b", "c", "d", "e", "f"),
-    attachment = c("N1", "N2", "ambiguous", "N1", "N2", "ambiguous") %>% as.factor(),
-    NP2 = c("simple", "simple", "simple", "complex", "complex", "complex") %>% as.factor()
-  )
-questions %<>% dplyr::left_join( conditions_info )
-spr %<>% dplyr::left_join( conditions_info )
+# df <- read.csv("../data/ibex/results/results", row.names = NULL, comment.char = "#", header = F, col.names = 1:12)
+# colnames(df) <- c("time", "ip_md5", "controller", "item_id", "element_id", "exp_condition", "item", "val1", "val2", "val3", "val4", "sentence")
+# 
+# df$subject <- with(df, paste(time, ip_md5)) %>% as.factor %>% as.integer %>% sprintf("S[%s]", .) %>% as.factor()
+# df %<>% dplyr::select(-time, -ip_md5)
+# 
+# # extract responses to questions in form
+# form <- subset(df, controller == "Form")
+# form %<>% dplyr::select(-item_id, -element_id, -exp_condition, -item, -val3:-sentence)
+# form %<>% subset(val1 != "_REACTION_TIME_")
+# form %<>% tidyr::pivot_wider(names_from = "val1", values_from = "val2")
+# View(form) # because of a copy-and-paste error 'male' in the natturk column means 'yes' (native speaker)
+# 
+# # extract spr reading times
+# spr <- subset(df, controller == "DashedSentence")
+# spr %<>% subset(exp_condition != "practice")
+# spr$condition <- spr$exp_condition %>% stringr::str_split_fixed("_", n=2) %>% .[,2]
+# spr %<>% dplyr::rename("word_pos"=val1, "word"=val2, "RT"=val3)
+# spr %<>% dplyr::select(-val4, -sentence, -element_id, -item_id, -controller) 
+# spr %<>% dplyr::select(subject, condition, item, word_pos, word, RT )
+# spr$word_pos %<>% as.integer()
+# 
+# # extract question answers
+# questions <- subset(df, controller == "Question")
+# questions %<>% subset(exp_condition != "practice")
+# questions$condition <- questions$exp_condition %>% stringr::str_split_fixed("_", n=2) %>% .[,2]
+# questions %<>% dplyr::select(-controller, -item_id, -element_id, -exp_condition, -sentence)
+# questions %<>% dplyr::rename( "question"=val1, "answer"=val2, "answer_correct"=val3, "RT"=val4)
+# questions %<>% dplyr::select( subject, condition, item, question, answer, answer_correct, RT )
+# head(questions)
+# View(questions)
+# 
+# # separate fillers from non-fillers
+# spr_fillers <- spr %>% subset(condition == "filler")
+# spr %<>% subset(condition != "filler")
+# question_fillers <- questions %>% subset(condition == "filler")
+# questions %<>% subset(condition != "filler")
+# 
+# 
+# # mapping from answers (rows) to attachment conditions (columns)
+# #     a,d   b,e   c,f
+# #     N1    N2    amb
+# #    ----------------
+# conditions_info <- 
+#   data.frame(
+#     condition = c("a", "b", "c", "d", "e", "f"),
+#     attachment = c("N1", "N2", "ambiguous", "N1", "N2", "ambiguous") %>% as.factor(),
+#     NP2 = c("simple", "simple", "simple", "complex", "complex", "complex") %>% as.factor()
+#   )
+# questions %<>% dplyr::left_join( conditions_info )
+# spr %<>% dplyr::left_join( conditions_info )
 
 
 # to-do: double check that the indicator in the answer_np1 'column' matches what's in the 'answer' column
